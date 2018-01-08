@@ -1,0 +1,25 @@
+group 'com.gdetotut'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven {
+        url "https://oss.sonatype.org/content/repositories/snapshots/"
+    }
+}
+
+dependencies {
+    compile 'com.google.code.gson:gson:2.8.2'
+    compile 'org.hildan.fxgson:fx-gson:3.1.0'
+    compile 'com.gdetotut:jundo-framework:1.10-SNAPSHOT'
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
