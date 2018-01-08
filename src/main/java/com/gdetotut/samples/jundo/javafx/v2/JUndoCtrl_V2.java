@@ -48,7 +48,7 @@ public class JUndoCtrl_V2 extends BaseCtrl implements UndoWatcher{
         });
 
         // Проверим на соответствие стека нашим ожиданиям и на версию
-        if(serializer.isExpected()) {
+        if(serializer.asExpected()) {
             stack = serializer.getStack();
             if(serializer.subjInfo.version == 1) {
                 // Миграция свойств на новую версию
