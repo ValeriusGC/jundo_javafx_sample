@@ -26,7 +26,6 @@ import static com.gdetotut.samples.jundo.javafx.BaseTab.UndoBulk.IDS_STACK;
  */
 public class JUndoCtrl_V1 extends BaseCtrl implements UndoWatcher{
 
-
     private final BaseTab tab;
 
     private final UndoStack stack;
@@ -73,6 +72,7 @@ public class JUndoCtrl_V1 extends BaseCtrl implements UndoWatcher{
         // Настройка undo/redo команд стека
         tab.undoBtn.setOnAction(event -> stack.undo());
         tab.redoBtn.setOnAction(event -> stack.redo());
+        tab.saveBtn.setOnAction(event -> stack.setClean());
         // ~
 
         // Сериализация с последующим переходом на закладку V2.
@@ -129,6 +129,7 @@ public class JUndoCtrl_V1 extends BaseCtrl implements UndoWatcher{
     public void indexChanged(int idx) {
         tab.undoBtn.setDisable(!stack.canUndo());
         tab.redoBtn.setDisable(!stack.canRedo());
+        tab.saveBtn.setDisable(stack.isClean());
         tab.undoBtn.setText("undo: " + stack.undoCaption());
         tab.redoBtn.setText("redo: " + stack.redoCaption());
     }
@@ -137,26 +138,27 @@ public class JUndoCtrl_V1 extends BaseCtrl implements UndoWatcher{
 
     @Override
     public void cleanChanged(boolean clean) {
-
+        tab.saveBtn.setDisable(clean);
+        System.out.println("cleanChanged: " + clean);
     }
 
     @Override
     public void canUndoChanged(boolean canUndo) {
-
+        System.out.println("canUndoChanged: " + canUndo);
     }
 
     @Override
     public void canRedoChanged(boolean canRedo) {
-
+        System.out.println("canRedoChanged: " + canRedo);
     }
 
     @Override
     public void undoTextChanged(String undoText) {
-
+        System.out.println("undoTextChanged: " + undoText);
     }
 
     @Override
     public void redoTextChanged(String redoText) {
-
+        System.out.println("redoTextChanged: " + redoText);
     }
 }

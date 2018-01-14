@@ -275,7 +275,7 @@ public class BaseTab extends Tab implements Serializable {
     public final Slider centerY = new Slider(0, 400, 200);
     public final Button undoBtn = new Button("Undo2");
     public final Button redoBtn = new Button("Redo2");
-    final Button saveBtn = new Button("Save2");
+    public final Button saveBtn = new Button("Save2");
     public final Button serialBtn = new Button();
 
     public BaseTab(String text, Circle shape) {
