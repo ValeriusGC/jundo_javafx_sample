@@ -13,8 +13,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import org.hildan.fxgson.FxGson;
-import org.jetbrains.annotations.NotNull;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -191,13 +191,13 @@ public class BaseTab extends Tab implements Serializable {
             @Override
             protected void doRedo() {
                 Slider slider = (Slider)owner.getLocalContexts().get(IDS_X_SLIDER);
-                slider.setValue((Double) newV);
+                slider.setValue(newV);
             }
 
             @Override
             protected void doUndo() {
                 Slider slider = (Slider)owner.getLocalContexts().get(IDS_X_SLIDER);
-                slider.setValue((Double)oldV);
+                slider.setValue(oldV);
             }
 
             /**
@@ -234,13 +234,13 @@ public class BaseTab extends Tab implements Serializable {
             @Override
             protected void doRedo() {
                 Slider slider = (Slider)owner.getLocalContexts().get(IDS_Y_SLIDER);
-                slider.setValue((Double) newV);
+                slider.setValue(newV);
             }
 
             @Override
             protected void doUndo() {
                 Slider slider = (Slider)owner.getLocalContexts().get(IDS_Y_SLIDER);
-                slider.setValue((Double)oldV);
+                slider.setValue(oldV);
             }
 
             /**

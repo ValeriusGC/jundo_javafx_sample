@@ -132,4 +132,31 @@ public class JUndoCtrl_V1 extends BaseCtrl implements UndoWatcher{
         tab.undoBtn.setText("undo: " + stack.undoCaption());
         tab.redoBtn.setText("redo: " + stack.redoCaption());
     }
+
+    // TODO: 14.01.18 Кнопку Save и все обработчики
+
+    @Override
+    public void cleanChanged(boolean clean) {
+
+    }
+
+    @Override
+    public void canUndoChanged(boolean canUndo) {
+
+    }
+
+    @Override
+    public void canRedoChanged(boolean canRedo) {
+
+    }
+
+    @Override
+    public void undoTextChanged(String undoText) {
+
+    }
+
+    @Override
+    public void redoTextChanged(String redoText) {
+
+    }
 }
