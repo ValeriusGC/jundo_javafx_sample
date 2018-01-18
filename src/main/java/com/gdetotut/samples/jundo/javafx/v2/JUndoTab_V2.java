@@ -12,7 +12,7 @@ public class JUndoTab_V2 extends BaseTab {
 
 //    private final JUndoCtrl_V2 ctrl;
 
-    public JUndoTab_V2(String text) throws IOException, ClassNotFoundException {
+    public JUndoTab_V2(String text) throws Exception {
         super(text, new Circle_V2());
         new JUndoCtrl_V2(this);
         serialBtn.setVisible(false);

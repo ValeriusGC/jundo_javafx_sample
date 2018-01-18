@@ -16,7 +16,7 @@ repositories {
 dependencies {
     compile 'com.google.code.gson:gson:2.8.2'
     compile 'org.hildan.fxgson:fx-gson:3.1.0'
-    compile 'com.gdetotut:jundo-framework:1.10-SNAPSHOT'
+    compile 'com.gdetotut:jundo-framework:1.12-SNAPSHOT'
     compile 'javax.validation:validation-api:1.0.0.GA'
 
     testCompile group: 'junit', name: 'junit', version: '4.12'

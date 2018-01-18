@@ -1,7 +1,7 @@
 package com.gdetotut.samples.jundo.javafx.v2;
 
-import com.gdetotut.jundo.UndoSerializer;
-import com.gdetotut.jundo.UndoSerializer.SubjInfo;
+import com.gdetotut.jundo.UndoPacket;
+import com.gdetotut.jundo.UndoPacket.SubjInfo;
 import com.gdetotut.jundo.UndoStack;
 import com.gdetotut.jundo.UndoWatcher;
 import com.gdetotut.samples.jundo.javafx.BaseCtrl;
@@ -13,11 +13,13 @@ import org.hildan.fxgson.FxGson;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import static com.gdetotut.samples.jundo.javafx.BaseTab.UndoBulk.IDS_STACK;
 
@@ -29,50 +31,42 @@ public class JUndoCtrl_V2 extends BaseCtrl implements UndoWatcher{
 
     private final BaseTab tab;
 
-    private final UndoStack stack;
+    private UndoStack stack;
 
-    public JUndoCtrl_V2(BaseTab tab) throws IOException, ClassNotFoundException {
+    public JUndoCtrl_V2(BaseTab tab) throws Exception {
         this.tab = tab;
 
-        String s = new String(Files.readAllBytes(Paths.get("./undo.txt")));
-        // Восстановление стека из строки.
-        UndoSerializer serializer = UndoSerializer.deserialize(s, (subjAsString, subjInfo) -> {
-            if(subjInfo.id.equals(IDS_STACK)) {
-                Type type = new TypeToken<HashMap<String, Object>>(){}.getType();
-                HashMap<String, Object> c = new Gson().fromJson(subjAsString, type);
-                return c;
-            }
-            // Следует возвращать null, если стек не нашего типа.
-            // Это выставит свойство UndoSerializer#isExpected в false.
-            return null;
-        });
+        String store = new String(Files.readAllBytes(Paths.get("./undo.txt")));
 
-        // Проверим на соответствие стека нашим ожиданиям и на версию
-        if(serializer.asExpected()) {
-            stack = serializer.getStack();
-            if(serializer.subjInfo.version == 1) {
-                // Миграция свойств на новую версию
-                Map<String, Object> map = (Map<String, Object>)stack.getSubj();
-                Gson fxGson = FxGson.createWithExtras();
-                Color c = fxGson.fromJson(map.get("color").toString(), Color.class);
-                tab.colorPicker.setValue(c);
-                Double r = fxGson.fromJson(map.get("radius").toString(), Double.class);
-                tab.radius.setValue(r);
-                Double x = fxGson.fromJson(map.get("x").toString(), Double.class);
-                tab.centerX.setValue(x);
-                Double y = fxGson.fromJson(map.get("y").toString(), Double.class);
-                tab.centerY.setValue(y);
-            }
-        }else{
+        stack = UndoPacket
+                .peek(store, subjInfo -> IDS_STACK.equals(subjInfo.id))
+                .restore((processedSubj, subjInfo) -> {
+                    Type type = new TypeToken<HashMap<String, Object>>(){}.getType();
+                    HashMap<String, Object> map = new Gson().fromJson((String) processedSubj, type);
+                    if(subjInfo.version == 1) {
+                        // Миграция свойств на новую версию
+                        Gson fxGson = FxGson.createWithExtras();
+                        Color c = fxGson.fromJson(map.get("color").toString(), Color.class);
+                        tab.colorPicker.setValue(c);
+                        Double r = fxGson.fromJson(map.get("radius").toString(), Double.class);
+                        tab.radius.setValue(r);
+                        Double x = fxGson.fromJson(map.get("x").toString(), Double.class);
+                        tab.centerX.setValue(x);
+                        Double y = fxGson.fromJson(map.get("y").toString(), Double.class);
+                        tab.centerY.setValue(y);
+                    }
+                    return map;
+                }).stack((stack, subjInfo) -> {
+                    // Подключение локальных контекстов на нужные места
+                    stack.getLocalContexts().put(BaseTab.UndoBulk.IDS_RES, new Resources_V2());
+                    stack.getLocalContexts().put(BaseTab.UndoBulk.IDS_COLOR_PICKER, tab.colorPicker);
+                    stack.getLocalContexts().put(BaseTab.UndoBulk.IDS_RADIUS_SLIDER, tab.radius);
+                    stack.getLocalContexts().put(BaseTab.UndoBulk.IDS_X_SLIDER, tab.centerX);
+                    stack.getLocalContexts().put(BaseTab.UndoBulk.IDS_Y_SLIDER, tab.centerY);
+                });
+
+        if(null == stack)
             stack = new UndoStack(tab.shape, null);
-        }
-
-        // Подключение локальных контекстов на нужные места
-        stack.getLocalContexts().put(BaseTab.UndoBulk.IDS_RES, new Resources_V2());
-        stack.getLocalContexts().put(BaseTab.UndoBulk.IDS_COLOR_PICKER, tab.colorPicker);
-        stack.getLocalContexts().put(BaseTab.UndoBulk.IDS_RADIUS_SLIDER, tab.radius);
-        stack.getLocalContexts().put(BaseTab.UndoBulk.IDS_X_SLIDER, tab.centerX);
-        stack.getLocalContexts().put(BaseTab.UndoBulk.IDS_Y_SLIDER, tab.centerY);
         stack.setWatcher(this);
 
         // Подключение слушателей свойств к созданию команд.

@@ -1,6 +1,6 @@
 package com.gdetotut.samples.jundo.javafx.v1;
 
-import com.gdetotut.jundo.UndoSerializer;
+import com.gdetotut.jundo.UndoPacket;
 import com.gdetotut.jundo.UndoStack;
 import com.gdetotut.jundo.UndoWatcher;
 import com.gdetotut.samples.jundo.javafx.BaseCtrl;
@@ -14,6 +14,7 @@ import javafx.scene.paint.Color;
 import org.hildan.fxgson.FxGson;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -24,7 +25,7 @@ import static com.gdetotut.samples.jundo.javafx.BaseTab.UndoBulk.IDS_STACK;
 /**
  * Контроллер для работы с JUndo на вкладке V1
  */
-public class JUndoCtrl_V1 extends BaseCtrl implements UndoWatcher{
+public class JUndoCtrl_V1 extends BaseCtrl implements UndoWatcher {
 
     private final BaseTab tab;
 
@@ -47,17 +48,17 @@ public class JUndoCtrl_V1 extends BaseCtrl implements UndoWatcher{
         tab.shape.fillProperty().addListener(
                 (observable, oldValue, newValue)
                         -> stack.push(new BaseTab.UndoBulk.ColorUndo(
-                                stack, null, 0, (Color)oldValue, (Color)newValue)
-        ));
+                        stack, null, 0, (Color) oldValue, (Color) newValue)
+                ));
         tab.shape.radiusProperty().addListener(
                 (observable, oldValue, newValue)
                         -> stack.push(new BaseTab.UndoBulk.RadiusUndo(
-                                stack, null, 1, oldValue, newValue)));
+                        stack, null, 1, oldValue, newValue)));
 
         tab.shape.centerXProperty().addListener(
                 (observable, oldValue, newValue)
                         -> stack.push(new BaseTab.UndoBulk.XUndo(
-                                stack, null, 2, oldValue, newValue)));
+                        stack, null, 2, oldValue, newValue)));
 
         tab.shape.centerYProperty().addListener(
                 (observable, oldValue, newValue)
@@ -79,12 +80,12 @@ public class JUndoCtrl_V1 extends BaseCtrl implements UndoWatcher{
         tab.serialBtn.setOnAction(event -> {
             try {
                 serialize();
-                if(tabPane.getTabs().size() > 1) {
+                if (tabPane.getTabs().size() > 1) {
                     tabPane.getTabs().remove(1);
                 }
                 tabPane.getTabs().add(new JUndoTab_V2("JUndo_V2"));
                 tabPane.getSelectionModel().select(1);
-            } catch (IOException | ClassNotFoundException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         });
@@ -95,26 +96,28 @@ public class JUndoCtrl_V1 extends BaseCtrl implements UndoWatcher{
      * Мы просто сохраняем нужные нам свойства в виде карты.
      */
     private void serialize() throws IOException {
-        String s = "";
-
-        // Мы сохраняем идентификатор стека и номер версии.
-        UndoSerializer serializer = new UndoSerializer(IDS_STACK, 1, stack);
         try {
-            s = UndoSerializer.serialize(serializer, true, subj -> {
-                Map<String, Object> props = new HashMap<>();
-                Gson fxGson = FxGson.createWithExtras();
-                props.put("color", FxGson.createWithExtras().toJson(tab.shape.getFill()));
-                props.put("radius", FxGson.createWithExtras().toJson(tab.shape.getRadius()));
-                props.put("x", FxGson.createWithExtras().toJson(tab.shape.getCenterX()));
-                props.put("y", FxGson.createWithExtras().toJson(tab.shape.getCenterY()));
-                return fxGson.toJson(props);
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
+            String store = UndoPacket
+                    .make(stack, IDS_STACK, 1)
+                    .onStore(new UndoPacket.OnStore() {
+                        @Override
+                        public Serializable handle(Object subj) {
+                            Map<String, Object> props = new HashMap<>();
+                            Gson fxGson = FxGson.createWithExtras();
+                            props.put("color", FxGson.createWithExtras().toJson(tab.shape.getFill()));
+                            props.put("radius", FxGson.createWithExtras().toJson(tab.shape.getRadius()));
+                            props.put("x", FxGson.createWithExtras().toJson(tab.shape.getCenterX()));
+                            props.put("y", FxGson.createWithExtras().toJson(tab.shape.getCenterY()));
+                            return fxGson.toJson(props);
+                        }
+                    })
+                    .zipped(true)
+                    .store();
+            // Для простоты стек сохраняется в файле в корне проекта.
+            Files.write(Paths.get("./undo.txt"), store.getBytes());
+        } catch (Exception e) {
+            System.err.println(e.getLocalizedMessage());
         }
-
-        // Для простоты стек сохраняется в файле в корне проекта.
-        Files.write(Paths.get("./undo.txt"), s.getBytes());
     }
 
     private void save() {
@@ -123,6 +126,7 @@ public class JUndoCtrl_V1 extends BaseCtrl implements UndoWatcher{
 
     /**
      * Обработчик одного из событий стека {@link UndoWatcher}
+     *
      * @param idx
      */
     @Override
