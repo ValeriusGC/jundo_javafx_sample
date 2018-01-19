@@ -7,6 +7,16 @@
 
 It based on the `Command pattern` - idea that all editing in an application is done by creating instances of commands. Commands apply changes to the document and are stored on a command stack. Furthermore, each command knows how to undo its changes to bring the document back to its previous state. As long as the application only uses command objects to change the state of the document, it is possible to undo a sequence of commands by traversing the stack downwards and calling undo on each command in turn. It is also possible to redo a sequence of commands by traversing the stack upwards and calling redo on each command.
 
+Along with ordinary undo/redo actions this library can:
+
+- keeps command history to use in another place another time
+- provides versioning of its subject to make migration possible and easy
+- uses 'local context' idiom to play saved commands in another address environment
+- allows macros creation to use them later
+- uses 'clean state' idiom as point of saving (e.g. to disk) for quick return to it
+- has 'merge' option for chain of identical commands (e.g. resizing or moving)
+- allows to handle special events for manual tune storing/restoring process if necessary
+
 This example illustrates library's advanced features.
 
 First af all you should plan the design of your 'undo stack' for specific subject.
