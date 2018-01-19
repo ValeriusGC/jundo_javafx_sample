@@ -3,7 +3,7 @@ package com.gdetotut.samples.jundo.javafx.v1;
 import com.gdetotut.samples.jundo.javafx.Resources;
 
 /**
- * Строковые ресурсы для
+ * String resources for V1
  */
 public class Resources_V1 implements Resources {
 

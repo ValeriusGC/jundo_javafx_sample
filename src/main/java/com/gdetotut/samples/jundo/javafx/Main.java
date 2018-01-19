@@ -21,7 +21,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
 
-        primaryStage.setTitle("Undo libs comparing");
+        primaryStage.setTitle("JUndo example");
         TabPane tabPane = new TabPane();
 
         BorderPane borderPane = new BorderPane();

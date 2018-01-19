@@ -1,7 +1,6 @@
 package com.gdetotut.samples.jundo.javafx.v2;
 
 import com.gdetotut.jundo.UndoPacket;
-import com.gdetotut.jundo.UndoPacket.SubjInfo;
 import com.gdetotut.jundo.UndoStack;
 import com.gdetotut.jundo.UndoWatcher;
 import com.gdetotut.samples.jundo.javafx.BaseCtrl;
@@ -10,22 +9,17 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import javafx.scene.paint.Color;
 import org.hildan.fxgson.FxGson;
-import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
-import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Predicate;
 
 import static com.gdetotut.samples.jundo.javafx.BaseTab.UndoBulk.IDS_STACK;
 
 
 /**
- * Контроллер для работы с JUndo на вкладке V2.
+ * Controller for  {@link JUndoTab_V2}
  */
 public class JUndoCtrl_V2 extends BaseCtrl implements UndoWatcher{
 
@@ -39,12 +33,14 @@ public class JUndoCtrl_V2 extends BaseCtrl implements UndoWatcher{
         String store = new String(Files.readAllBytes(Paths.get("./undo.txt")));
 
         stack = UndoPacket
+                // Check whether we got appropriate stack
                 .peek(store, subjInfo -> IDS_STACK.equals(subjInfo.id))
+                // Manual restoring (because we store non-serializable type)
                 .restore((processedSubj, subjInfo) -> {
                     Type type = new TypeToken<HashMap<String, Object>>(){}.getType();
                     HashMap<String, Object> map = new Gson().fromJson((String) processedSubj, type);
                     if(subjInfo.version == 1) {
-                        // Миграция свойств на новую версию
+                        // Second - migration from V1 to V2!
                         Gson fxGson = FxGson.createWithExtras();
                         Color c = fxGson.fromJson(map.get("color").toString(), Color.class);
                         tab.colorPicker.setValue(c);
@@ -57,7 +53,7 @@ public class JUndoCtrl_V2 extends BaseCtrl implements UndoWatcher{
                     }
                     return map;
                 }).stack((stack, subjInfo) -> {
-                    // Подключение локальных контекстов на нужные места
+                    // Restore new local contexts
                     stack.getLocalContexts().put(BaseTab.UndoBulk.IDS_RES, new Resources_V2());
                     stack.getLocalContexts().put(BaseTab.UndoBulk.IDS_COLOR_PICKER, tab.colorPicker);
                     stack.getLocalContexts().put(BaseTab.UndoBulk.IDS_RADIUS_SLIDER, tab.radius);
@@ -69,7 +65,7 @@ public class JUndoCtrl_V2 extends BaseCtrl implements UndoWatcher{
             stack = new UndoStack(tab.shape, null);
         stack.setWatcher(this);
 
-        // Подключение слушателей свойств к созданию команд.
+        // Link commands creation to widget listeners
         tab.shape.fillProperty().addListener(
                 (observable, oldValue, newValue)
                         -> stack.push(new BaseTab.UndoBulk.ColorUndo(
@@ -91,8 +87,11 @@ public class JUndoCtrl_V2 extends BaseCtrl implements UndoWatcher{
                         stack, null, 3, oldValue, newValue)));
 
 
+        // Initial call of event handler.
+        // At this moment stack is empty, index is 0
         indexChanged(stack.getIdx());
 
+        // Link stack to widget actions
         tab.undoBtn.setOnAction(event -> stack.undo());
         tab.redoBtn.setOnAction(event -> stack.redo());
         tab.saveBtn.setOnAction(event -> stack.setClean());

@@ -7,8 +7,6 @@ import com.gdetotut.samples.jundo.javafx.BaseCtrl;
 import com.gdetotut.samples.jundo.javafx.BaseTab;
 import com.gdetotut.samples.jundo.javafx.v2.JUndoTab_V2;
 import com.google.gson.Gson;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.control.TabPane;
 import javafx.scene.paint.Color;
 import org.hildan.fxgson.FxGson;
@@ -23,7 +21,7 @@ import java.util.Map;
 import static com.gdetotut.samples.jundo.javafx.BaseTab.UndoBulk.IDS_STACK;
 
 /**
- * Контроллер для работы с JUndo на вкладке V1
+ * Controller for {@link JUndoTab_V1}
  */
 public class JUndoCtrl_V1 extends BaseCtrl implements UndoWatcher {
 
@@ -35,16 +33,16 @@ public class JUndoCtrl_V1 extends BaseCtrl implements UndoWatcher {
         this.tab = tab;
 
         stack = new UndoStack(tab.shape, null);
-        // Назначение локальных контекстов
+        // Set local contexts.
         stack.getLocalContexts().put(BaseTab.UndoBulk.IDS_RES, new Resources_V1());
         stack.getLocalContexts().put(BaseTab.UndoBulk.IDS_COLOR_PICKER, tab.colorPicker);
         stack.getLocalContexts().put(BaseTab.UndoBulk.IDS_RADIUS_SLIDER, tab.radius);
         stack.getLocalContexts().put(BaseTab.UndoBulk.IDS_X_SLIDER, tab.centerX);
         stack.getLocalContexts().put(BaseTab.UndoBulk.IDS_Y_SLIDER, tab.centerY);
-        // Назначение обработчика событий UndoStack
+        //Set stack's event handler.
         stack.setWatcher(this);
 
-        // Привязка создания команд к событиям пропертей
+        // Link commands creation to widget listeners
         tab.shape.fillProperty().addListener(
                 (observable, oldValue, newValue)
                         -> stack.push(new BaseTab.UndoBulk.ColorUndo(
@@ -66,19 +64,19 @@ public class JUndoCtrl_V1 extends BaseCtrl implements UndoWatcher {
                         stack, null, 3, oldValue, newValue)));
         // ~
 
-        // Вызов обработчика событий для настройки виджетов.
-        // В данный момент стек пуст, и индекс равен 0
+        // Initial call of event handler.
+        // At this moment stack is empty, index is 0
         indexChanged(stack.getIdx());
 
-        // Настройка undo/redo команд стека
+        // Link stack to widget actions
         tab.undoBtn.setOnAction(event -> stack.undo());
         tab.redoBtn.setOnAction(event -> stack.redo());
         tab.saveBtn.setOnAction(event -> stack.setClean());
         // ~
 
-        // Сериализация с последующим переходом на закладку V2.
         tab.serialBtn.setOnAction(event -> {
             try {
+                // Store then go to tab_V2.
                 serialize();
                 if (tabPane.getTabs().size() > 1) {
                     tabPane.getTabs().remove(1);
@@ -92,8 +90,8 @@ public class JUndoCtrl_V1 extends BaseCtrl implements UndoWatcher {
     }
 
     /**
-     * Сериализация демонстрирует технику работы с несериализуемым субъектом стека.
-     * Мы просто сохраняем нужные нам свойства в виде карты.
+     * Here demonstrates how to work with the non-serializable subject.
+     * <p>We just save specific values in the map.
      */
     private void serialize() throws IOException {
         try {
@@ -113,7 +111,7 @@ public class JUndoCtrl_V1 extends BaseCtrl implements UndoWatcher {
                     })
                     .zipped(true)
                     .store();
-            // Для простоты стек сохраняется в файле в корне проекта.
+            // Save it in the file.
             Files.write(Paths.get("./undo.txt"), store.getBytes());
         } catch (Exception e) {
             System.err.println(e.getLocalizedMessage());
@@ -125,9 +123,6 @@ public class JUndoCtrl_V1 extends BaseCtrl implements UndoWatcher {
     }
 
     /**
-     * Обработчик одного из событий стека {@link UndoWatcher}
-     *
-     * @param idx
      */
     @Override
     public void indexChanged(int idx) {
