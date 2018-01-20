@@ -212,10 +212,11 @@ stack.setWatcher(this);
 ```
 
 Next connection to app's widgets and actions - as in **Step 2. Commands and stack linking**.
+
 **Voila!**
 
 As you see if you take time for design you get simple and elegant undo system.
 
 - - -
 
-==The library has a lot of tests with using techniques. See them in the code.==
+[See this JUndo library](https://github.com/ValeriusGC/jundo).
