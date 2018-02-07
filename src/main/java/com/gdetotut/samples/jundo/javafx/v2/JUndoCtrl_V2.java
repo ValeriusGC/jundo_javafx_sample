@@ -5,6 +5,10 @@ import com.gdetotut.jundo.UndoStack;
 import com.gdetotut.jundo.UndoWatcher;
 import com.gdetotut.samples.jundo.javafx.BaseCtrl;
 import com.gdetotut.samples.jundo.javafx.BaseTab;
+import com.gdetotut.samples.jundo.javafx.BaseTab.UndoBulk.ColorUndo;
+import com.gdetotut.samples.jundo.javafx.BaseTab.UndoBulk.RadiusUndo;
+import com.gdetotut.samples.jundo.javafx.BaseTab.UndoBulk.XUndo;
+import com.gdetotut.samples.jundo.javafx.BaseTab.UndoBulk.YUndo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import javafx.scene.paint.Color;
@@ -52,39 +56,57 @@ public class JUndoCtrl_V2 extends BaseCtrl implements UndoWatcher{
                         tab.centerY.setValue(y);
                     }
                     return map;
-                }).stack((stack, subjInfo) -> {
+                }, () -> new UndoStack(tab.shape))
+                .stack((stack, subjInfo, result) -> {
+
+                    if(result.result != UndoPacket.UnpackResult.UPR_Success) {
+                        System.err.println(result.msg);
+                    }
+
                     // Restore new local contexts
                     stack.getLocalContexts().put(BaseTab.UndoBulk.IDS_RES, new Resources_V2());
                     stack.getLocalContexts().put(BaseTab.UndoBulk.IDS_COLOR_PICKER, tab.colorPicker);
                     stack.getLocalContexts().put(BaseTab.UndoBulk.IDS_RADIUS_SLIDER, tab.radius);
                     stack.getLocalContexts().put(BaseTab.UndoBulk.IDS_X_SLIDER, tab.centerX);
                     stack.getLocalContexts().put(BaseTab.UndoBulk.IDS_Y_SLIDER, tab.centerY);
+                    stack.setWatcher(this);
                 });
-
-        if(null == stack)
-            stack = new UndoStack(tab.shape, null);
-        stack.setWatcher(this);
 
         // Link commands creation to widget listeners
         tab.shape.fillProperty().addListener(
-                (observable, oldValue, newValue)
-                        -> stack.push(new BaseTab.UndoBulk.ColorUndo(
-                        stack, null, 0, (Color)oldValue, (Color)newValue)
-                ));
+                (observable, oldValue, newValue) -> {
+                    try {
+                        stack.push(new ColorUndo(0, (Color)oldValue, (Color)newValue));
+                    } catch (Exception e) {
+                        System.err.println(e.getLocalizedMessage());
+                    }
+                });
         tab.shape.radiusProperty().addListener(
-                (observable, oldValue, newValue)
-                        -> stack.push(new BaseTab.UndoBulk.RadiusUndo(
-                        stack, null, 1, oldValue, newValue)));
+                (observable, oldValue, newValue) -> {
+                    try {
+                        stack.push(new RadiusUndo(1, oldValue, newValue));
+                    } catch (Exception e) {
+                        System.err.println(e.getLocalizedMessage());
+                    }
+                });
 
         tab.shape.centerXProperty().addListener(
-                (observable, oldValue, newValue)
-                        -> stack.push(new BaseTab.UndoBulk.XUndo(
-                        stack, null, 2, oldValue, newValue)));
+                (observable, oldValue, newValue) -> {
+                    try {
+                        stack.push(new XUndo(2, oldValue, newValue));
+                    } catch (Exception e) {
+                        System.err.println(e.getLocalizedMessage());
+                    }
+                });
 
         tab.shape.centerYProperty().addListener(
-                (observable, oldValue, newValue)
-                        -> stack.push(new BaseTab.UndoBulk.YUndo(
-                        stack, null, 3, oldValue, newValue)));
+                (observable, oldValue, newValue) -> {
+                    try {
+                        stack.push(new YUndo(3, oldValue, newValue));
+                    } catch (Exception e) {
+                        System.err.println(e.getLocalizedMessage());
+                    }
+                });
 
 
         // Initial call of event handler.

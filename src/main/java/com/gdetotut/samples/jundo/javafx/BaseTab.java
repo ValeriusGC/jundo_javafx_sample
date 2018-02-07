@@ -71,14 +71,12 @@ public class BaseTab extends Tab implements Serializable {
             final int resId;
 
             /**
-             * @param owner Ссылка на свой {@link UndoStack}
-             * @param parent Для команд в "цепочке".
              * @param resId Идентификатор строкового ресурса для {@link #getCaption}
              * @param oldV Текущее значение.
              * @param newV Значение, которое надо присвоить.
              */
-            public BaseUndo(@NotNull UndoStack owner, UndoCommand parent, int resId, V oldV, V newV) {
-                super(owner, "", parent);
+            public BaseUndo(int resId, V oldV, V newV) {
+                super("");
                 this.oldV = oldV;
                 this.newV = newV;
                 this.resId = resId;
@@ -88,7 +86,7 @@ public class BaseTab extends Tab implements Serializable {
             public String getCaption() {
                 // Техника получения элемента локального контекста.
                 // В реальности, конечно, следует проверять на наличие.
-                Resources res = (Resources) owner.getLocalContexts().get(IDS_RES);
+                Resources res = (Resources) getOwner().getLocalContexts().get(IDS_RES);
                 return res.getString(resId);
             }
         }
@@ -100,17 +98,15 @@ public class BaseTab extends Tab implements Serializable {
          */
         public static class ColorUndo extends BaseUndo<String> {
 
-            public ColorUndo(@NotNull UndoStack owner, UndoCommand parent, int resId, Color oldV, Color newV) {
-                super(owner, parent, resId,
-                        FxGson.createWithExtras().toJson(oldV),
-                        FxGson.createWithExtras().toJson(newV));
+            public ColorUndo(int resId, Color oldV, Color newV) {
+                super(resId, FxGson.createWithExtras().toJson(oldV), FxGson.createWithExtras().toJson(newV));
             }
 
             @Override
             protected void doRedo() {
                 // Техника получения элемента локального контекста.
                 // В реальности, конечно, следует проверять на наличие.
-                ColorPicker cp = (ColorPicker) owner.getLocalContexts().get(IDS_COLOR_PICKER);
+                ColorPicker cp = (ColorPicker) getOwner().getLocalContexts().get(IDS_COLOR_PICKER);
 
                 Color cl = FxGson.createWithExtras().fromJson(newV, Color.class);
                 cp.setValue(cl);
@@ -120,7 +116,7 @@ public class BaseTab extends Tab implements Serializable {
             protected void doUndo() {
                 // Техника получения элемента локального контекста.
                 // В реальности, конечно, следует проверять на наличие.
-                ColorPicker cp = (ColorPicker) owner.getLocalContexts().get(IDS_COLOR_PICKER);
+                ColorPicker cp = (ColorPicker) getOwner().getLocalContexts().get(IDS_COLOR_PICKER);
 
                 Color cl = FxGson.createWithExtras().fromJson(oldV, Color.class);
                 cp.setValue(cl);
@@ -138,19 +134,19 @@ public class BaseTab extends Tab implements Serializable {
             /**
              * Конструктор ничем не отличается от конструктора {@link ColorUndo}, за исключением типа значения.
              */
-            public RadiusUndo(@NotNull UndoStack owner, UndoCommand parent, int resId, Number oldV, Number newV) {
-                super(owner, parent, resId, (Double) oldV, (Double)newV);
+            public RadiusUndo(int resId, Number oldV, Number newV) {
+                super(resId, (Double) oldV, (Double)newV);
             }
 
             @Override
             protected void doRedo() {
-                Slider slider = (Slider)owner.getLocalContexts().get(IDS_RADIUS_SLIDER);
+                Slider slider = (Slider)getOwner().getLocalContexts().get(IDS_RADIUS_SLIDER);
                 slider.setValue(newV);
             }
 
             @Override
             protected void doUndo() {
-                Slider slider = (Slider)owner.getLocalContexts().get(IDS_RADIUS_SLIDER);
+                Slider slider = (Slider)getOwner().getLocalContexts().get(IDS_RADIUS_SLIDER);
                 slider.setValue(oldV);
             }
 
@@ -184,19 +180,19 @@ public class BaseTab extends Tab implements Serializable {
          */
         public static class XUndo extends BaseUndo<Double> {
 
-            public XUndo(@NotNull UndoStack owner, UndoCommand parent, int resId, Number oldV, Number newV) {
-                super(owner, parent, resId, (Double) oldV, (Double)newV);
+            public XUndo(int resId, Number oldV, Number newV) {
+                super(resId, (Double) oldV, (Double)newV);
             }
 
             @Override
             protected void doRedo() {
-                Slider slider = (Slider)owner.getLocalContexts().get(IDS_X_SLIDER);
+                Slider slider = (Slider)getOwner().getLocalContexts().get(IDS_X_SLIDER);
                 slider.setValue(newV);
             }
 
             @Override
             protected void doUndo() {
-                Slider slider = (Slider)owner.getLocalContexts().get(IDS_X_SLIDER);
+                Slider slider = (Slider)getOwner().getLocalContexts().get(IDS_X_SLIDER);
                 slider.setValue(oldV);
             }
 
@@ -227,19 +223,19 @@ public class BaseTab extends Tab implements Serializable {
          */
         public static class YUndo extends BaseUndo<Double> {
 
-            public YUndo(@NotNull UndoStack owner, UndoCommand parent, int resId, Number oldV, Number newV) {
-                super(owner, parent, resId, (Double) oldV, (Double)newV);
+            public YUndo(int resId, Number oldV, Number newV) {
+                super(resId, (Double) oldV, (Double)newV);
             }
 
             @Override
             protected void doRedo() {
-                Slider slider = (Slider)owner.getLocalContexts().get(IDS_Y_SLIDER);
+                Slider slider = (Slider)getOwner().getLocalContexts().get(IDS_Y_SLIDER);
                 slider.setValue(newV);
             }
 
             @Override
             protected void doUndo() {
-                Slider slider = (Slider)owner.getLocalContexts().get(IDS_Y_SLIDER);
+                Slider slider = (Slider)getOwner().getLocalContexts().get(IDS_Y_SLIDER);
                 slider.setValue(oldV);
             }
 

@@ -5,6 +5,10 @@ import com.gdetotut.jundo.UndoStack;
 import com.gdetotut.jundo.UndoWatcher;
 import com.gdetotut.samples.jundo.javafx.BaseCtrl;
 import com.gdetotut.samples.jundo.javafx.BaseTab;
+import com.gdetotut.samples.jundo.javafx.BaseTab.UndoBulk.ColorUndo;
+import com.gdetotut.samples.jundo.javafx.BaseTab.UndoBulk.RadiusUndo;
+import com.gdetotut.samples.jundo.javafx.BaseTab.UndoBulk.XUndo;
+import com.gdetotut.samples.jundo.javafx.BaseTab.UndoBulk.YUndo;
 import com.gdetotut.samples.jundo.javafx.v2.JUndoTab_V2;
 import com.google.gson.Gson;
 import javafx.scene.control.TabPane;
@@ -44,24 +48,39 @@ public class JUndoCtrl_V1 extends BaseCtrl implements UndoWatcher {
 
         // Link commands creation to widget listeners
         tab.shape.fillProperty().addListener(
-                (observable, oldValue, newValue)
-                        -> stack.push(new BaseTab.UndoBulk.ColorUndo(
-                        stack, null, 0, (Color) oldValue, (Color) newValue)
-                ));
+                (observable, oldValue, newValue) -> {
+                    try {
+                        stack.push(new ColorUndo(0, (Color) oldValue, (Color) newValue));
+                    } catch (Exception e) {
+                        System.err.println(e.getLocalizedMessage());
+                    }
+                });
         tab.shape.radiusProperty().addListener(
-                (observable, oldValue, newValue)
-                        -> stack.push(new BaseTab.UndoBulk.RadiusUndo(
-                        stack, null, 1, oldValue, newValue)));
+                (observable, oldValue, newValue) -> {
+                    try {
+                        stack.push(new RadiusUndo(1, oldValue, newValue));
+                    } catch (Exception e) {
+                        System.err.println(e.getLocalizedMessage());
+                    }
+                });
 
         tab.shape.centerXProperty().addListener(
-                (observable, oldValue, newValue)
-                        -> stack.push(new BaseTab.UndoBulk.XUndo(
-                        stack, null, 2, oldValue, newValue)));
+                (observable, oldValue, newValue) -> {
+                    try {
+                        stack.push(new XUndo(2, oldValue, newValue));
+                    } catch (Exception e) {
+                        System.err.println(e.getLocalizedMessage());
+                    }
+                });
 
         tab.shape.centerYProperty().addListener(
-                (observable, oldValue, newValue)
-                        -> stack.push(new BaseTab.UndoBulk.YUndo(
-                        stack, null, 3, oldValue, newValue)));
+                (observable, oldValue, newValue) -> {
+                    try {
+                        stack.push(new YUndo(3, oldValue, newValue));
+                    } catch (Exception e) {
+                        System.err.println(e.getLocalizedMessage());
+                    }
+                });
         // ~
 
         // Initial call of event handler.

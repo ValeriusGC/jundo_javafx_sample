@@ -11,7 +11,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Gradle: org.hildan.fxgson:fx-gson:3.1.0" level="project" />
     <orderEntry type="library" name="Gradle: com.google.code.gson:gson:2.8.2" level="project" />
-    <orderEntry type="library" name="Gradle: com.gdetotut:jundo-framework:1.15" level="project" />
+    <orderEntry type="library" name="Gradle: com.gdetotut:jundo-framework:1.51-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Gradle: javax.validation:validation-api:1.0.0.GA" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains:annotations:15.0" level="project" />
     <orderEntry type="library" name="Gradle: junit:junit:4.12" level="project" />
