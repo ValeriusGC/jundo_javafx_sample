@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import static com.gdetotut.samples.jundo.javacon.UndoMacrosSample.*;
@@ -52,15 +53,24 @@ public class UndoMacrosSample {
         sideR.restore(packets);
         System.out.println("\n--- R-сторона (RUS) ---");
         System.out.println(sideR.print());
-        System.out.println("\n--- 4. Работаем с переданными макросами: ---");
+
+        System.out.println("\n--- 4. Откатимся: ---");
+        sideR.maxUndo();
+        System.out.println(sideR.print());
+
+        System.out.println("\n--- 5. Накатимся обратно: ---");
+        sideR.maxRedo();
+        System.out.println(sideR.print());
+
+        System.out.println("\n--- 6. Работаем с переданными макросами: ---");
         sideR.doingWorkAgain();
         System.out.println(sideR.print());
 
-        System.out.println("\n--- 5. Очистим: ---");
+        System.out.println("\n--- 7. Очистим: ---");
         sideR.clearDocs();
         System.out.println(sideR.print());
 
-        System.out.println("\n--- 6. И снова макросами: ---");
+        System.out.println("\n--- 8. И снова макросами: ---");
         sideR.doingWorkAgain();
         System.out.println(sideR.print());
         // ~Do some work on B-side (ru)
@@ -91,8 +101,11 @@ public class UndoMacrosSample {
         final String id;
         final List<String> text = new ArrayList<>();
 
+        final UndoStack stack;
+
         Doc(String id) {
             this.id = id;
+            stack = new UndoStack(this);
         }
 
         /**
@@ -117,7 +130,8 @@ public class UndoMacrosSample {
          * Adds new empty line
          */
         void addLine() {
-            text.add("");
+            text.add("" + new java.util.Date() + ":>\t");
+            //text.add("line #" + text.size() + 1);
         }
 
         /**
@@ -354,17 +368,17 @@ public class UndoMacrosSample {
         /**
          * Creates docs, stacks and fills them with initial data.
          */
-        private UndoStack createDoc(int idx) {
+        private Doc createDoc(int idx) {
             // Помещаем документ "SummingDoc" в лист
             Doc doc = new Doc(dids[idx]);
             docs.add(doc);
             // Creates stack, its contexts and puts it all together.
-            UndoStack stack = new UndoStack(doc);
+            UndoStack stack = doc.stack;
             stack.getLocalContexts().put(RES, res);
             stack.getLocalContexts().put(FUN_SQUARE, (Function<Integer, String>) this::square);
             stack.getLocalContexts().put(FUN_CUBE, (Function<Integer, String>) this::cube);
             stackMap.put(sids[idx], stack);
-            return stack;
+            return doc;
         }
 
         /**
@@ -374,7 +388,7 @@ public class UndoMacrosSample {
 
             // Create doc & stack
             int idx = 0;
-            UndoStack stack = createDoc(idx);
+            UndoStack stack = createDoc(idx).stack;
 
             // create first undoes & macro
             stack.beginMacro(mids[idx]);
@@ -394,7 +408,7 @@ public class UndoMacrosSample {
         private void createCube() throws Exception {
             // Create doc & stack
             int idx = 1;
-            UndoStack stack = createDoc(idx);
+            UndoStack stack = createDoc(idx).stack;
 
             // create first undoes & macro
             stack.beginMacro(mids[idx]);
@@ -516,6 +530,24 @@ public class UndoMacrosSample {
                     stack.push(macro);
                 }
             }
+        }
+
+        void maxUndo() {
+            stackMap.forEach(new BiConsumer<String, UndoStack>() {
+                @Override
+                public void accept(String s, UndoStack undoStack) {
+                    undoStack.setIndex(0);
+                }
+            });
+        }
+
+        void maxRedo() {
+            stackMap.forEach(new BiConsumer<String, UndoStack>() {
+                @Override
+                public void accept(String s, UndoStack undoStack) {
+                    undoStack.setIndex(undoStack.count());
+                }
+            });
         }
 
         /**
