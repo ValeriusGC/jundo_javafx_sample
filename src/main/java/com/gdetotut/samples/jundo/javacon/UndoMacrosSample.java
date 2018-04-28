@@ -17,7 +17,7 @@ import static com.gdetotut.samples.jundo.javacon.UndoMacrosSample.Side.ResId.*;
  * <p>Клиент может использовать макросы повторно с разными параметрами.
  * <p>Кроме этого, в примере активно используется техника локальных контекстов применимо к строковым ресурсам
  * и использующимся функциям. Это позволяет гибко привязываться к новому окружению после упаковки/распаковки стеков.
- *
+ * <p>
  * В коде используется 2 "документа" {@link Doc}, каждый из которых в процессе работы с параметризованной командой
  * создает по макросу.
  * <p>Макросы размещаются в общую карту {@link Macros}, и используются повторно каждым документом.
@@ -31,7 +31,7 @@ public class UndoMacrosSample {
 
     public static void main(String[] args) throws Exception {
 
-        // Do some work on A-side
+        // Do some work on A-side (en)
         SideEn sideE = new SideEn();
         System.out.println("--- E-side (ENG) ---");
         System.out.println(sideE.print());
@@ -41,11 +41,13 @@ public class UndoMacrosSample {
         System.out.println("--- 2. Apply all macros to every doc ---");
         sideE.applyMacros();
         System.out.println(sideE.print());
+        // ~Do some work on A-side
 
-
+        // Packing stacks
         System.out.println("--- 3. Pack and move to R-side... ---");
         Map<String, String> packets = sideE.pack();
-        //
+
+        // Do some work on B-side (ru) with restored stacks and macros
         SideRu sideR = new SideRu();
         sideR.restore(packets);
         System.out.println("\n--- R-сторона (RUS) ---");
@@ -61,6 +63,7 @@ public class UndoMacrosSample {
         System.out.println("\n--- 6. И снова макросами: ---");
         sideR.doingWorkAgain();
         System.out.println(sideR.print());
+        // ~Do some work on B-side (ru)
     }
 
     //------------------------------------------------------------------------------------------------------------------
@@ -69,26 +72,24 @@ public class UndoMacrosSample {
      * Utility class for handy using of locale resources.
      */
     static class Res {
-        public final TreeMap<Integer, String> items = new TreeMap<>();
+        final TreeMap<Integer, String> items = new TreeMap<>();
     }
 
     /**
      * Utility class for handy using of macros.
      */
     static class Macros implements Serializable {
-        public final TreeMap<String, UndoMacro> items = new TreeMap<>();
+        final TreeMap<String, UndoMacro> items = new TreeMap<>();
     }
 
     /**
-     * Псевдодокумент, содержащий результаты работы арифметических методов.
-     *
-     * Sample class for macros example.
-     *
+     * Псевдодокумент, содержащий результаты работы арифметических методов в виде набора строк.
+     * <p>Sample class for macros example.
      */
     public static class Doc {
 
         final String id;
-        public final List<String> text = new ArrayList<>();
+        final List<String> text = new ArrayList<>();
 
         Doc(String id) {
             this.id = id;
@@ -97,7 +98,7 @@ public class UndoMacrosSample {
         /**
          * Adds substring to current position.
          */
-        public void add(String s) {
+        void add(String s) {
             String cur = text.size() != 0 ? text.remove(text.size() - 1) : "";
             cur += s;
             text.add(cur);
@@ -106,32 +107,32 @@ public class UndoMacrosSample {
         /**
          * Removes substring from current position
          */
-        public void remove(String s) {
+        void remove(String s) {
             String cur = text.remove(text.size() - 1);
             cur = cur.substring(0, cur.length() - s.length());
             text.add(cur);
         }
 
         /**
-         * Adds new line
+         * Adds new empty line
          */
-        public void addLine() {
+        void addLine() {
             text.add("");
         }
 
         /**
          * Removes last line.
          */
-        public void removeLine() {
-            if(text.size() > 0) {
+        void removeLine() {
+            if (text.size() > 0) {
                 text.remove(text.size() - 1);
             }
         }
 
         /**
-         * Resets current text with value.
+         * Resets current text with new value.
          */
-        public void reset(List<String> value) {
+        void reset(List<String> value) {
             text.clear();
             text.addAll(value);
         }
@@ -139,7 +140,7 @@ public class UndoMacrosSample {
         /**
          * Prints content of object to string.
          */
-        public String print() {
+        String print() {
             StringBuilder builder = new StringBuilder();
             builder.append(id).append("\n");
             for (String s : text) {
@@ -169,7 +170,22 @@ public class UndoMacrosSample {
      * <p>First side named {@link SideEn} uses english localization when second one named {@link SideRu}
      * uses russian one.
      */
-    abstract public static class Side {
+    abstract static class Side {
+
+        /**
+         * Идентификаторы строковых ресурсов в локализациях.
+         * <p>String resources identifiers for locales.
+         */
+        enum ResId {
+            RI_Name,
+            RI_Docs,
+            RI_DocName,
+            RI_SqPrompt,
+            RI_CbPrompt,
+            RI_Result,
+            RI_FunSqName,
+            RI_FunCbName
+        }
 
         // Some identifiers for local contexts and repacking procedure.
 
@@ -201,23 +217,6 @@ public class UndoMacrosSample {
         // ~Some identifiers for local contexts and repacking procedure.
 
         /**
-         * Идентификаторы строковых ресурсов в локализациях.
-         *
-         * String resources identifiers for locales.
-         */
-        enum ResId {
-            RI_Name,
-            RI_Docs,
-            RI_DocName,
-            RI_SqPrompt,
-            RI_CbPrompt,
-            RI_Result,
-            RI_FunSqName,
-            RI_FunCbName
-        }
-
-
-        /**
          * {@link Doc} ids for two docs.
          */
         static String[] dids = new String[]{"Doc_1", "Doc_2"};
@@ -225,7 +224,7 @@ public class UndoMacrosSample {
         /**
          * Stack identifiers for manipulates stacks in the list.
          */
-        static String[] sids = new String[] {"stackSquaringDoc", "stackCubingDoc"};
+        static String[] sids = new String[]{"stackSquaringDoc", "stackCubingDoc"};
 
         /**
          * Stack identifiers for manipulates macro in the list.
@@ -265,7 +264,7 @@ public class UndoMacrosSample {
         /**
          * @return Locale string by its identifier.
          */
-        String getPromptById(int id){
+        String getPromptById(int id) {
             return res.items.get(id);
         }
 
@@ -412,8 +411,8 @@ public class UndoMacrosSample {
          * Applies standalone saved macros to the docs.
          */
         void applyMacros() throws Exception {
-            for (UndoStack stack: stackMap.values()) {
-                for (UndoMacro macro : macros.items.values() ) {
+            for (UndoStack stack : stackMap.values()) {
+                for (UndoMacro macro : macros.items.values()) {
                     stack.push(macro);
                 }
             }
@@ -426,12 +425,12 @@ public class UndoMacrosSample {
             for (int i = 0; i < docs.size(); ++i) {
                 packet = UndoPacket
                         // Good practice to pass identifier and version to UndoPacket
-                        .make(stackMap.get(sids[i]), sids[i], 1)
+                        .prepare(stackMap.get(sids[i]), sids[i], 1)
                         // As the subject has non-serializable type we save it as a proxy-string.
-                        .onStore(subj -> String.join(DELIM, ((Doc) subj).text))
+                        .onStoreManually(subj -> String.join(DELIM, ((Doc) subj).text))
                         // Pass macros as an extra parameter.
-                        .extra(MACROS, macros)
-                        .zipped(true)
+                        .addExtra(MACROS, macros)
+                        .zip()
                         .store();
                 packets.put(sids[i], packet);
             }
@@ -474,7 +473,7 @@ public class UndoMacrosSample {
                             Object o = subjInfo.extras.get(MACROS);
                             if (o != null && o instanceof Macros) {
                                 Macros src = (Macros) o;
-                                for (Map.Entry<String, UndoMacro> es: src.items.entrySet()) {
+                                for (Map.Entry<String, UndoMacro> es : src.items.entrySet()) {
                                     macros.items.put(es.getKey(), es.getValue());
                                 }
                             }
@@ -491,8 +490,8 @@ public class UndoMacrosSample {
                             return null;
                             // ...and use default creator.
                         }, () -> new UndoStack(new Doc(dids[idx])))
-                        .prepare((stackBack, subjInfo, result) -> {
-                            if (result.code != UndoPacket.UnpackResult.UPR_Success) {
+                        .process((stackBack, subjInfo, result) -> {
+                            if (result.code != UndoPacket.Result.Code.RC_Success) {
                                 // Make message for client if something was wrong.
                                 System.err.println(result.code + " <- " + result.msg);
                             }
@@ -512,8 +511,8 @@ public class UndoMacrosSample {
          * Applies macros to the stacks once more.
          */
         void doingWorkAgain() throws Exception {
-            for (UndoStack stack: stackMap.values()) {
-                for (UndoMacro macro : macros.items.values() ) {
+            for (UndoStack stack : stackMap.values()) {
+                for (UndoMacro macro : macros.items.values()) {
                     stack.push(macro);
                 }
             }
@@ -523,7 +522,7 @@ public class UndoMacrosSample {
          * Rolls docs back to the empty state.
          */
         void clearDocs() throws Exception {
-            for (UndoStack stack: stackMap.values()) {
+            for (UndoStack stack : stackMap.values()) {
                 while (stack.getIdx() > 0) {
                     stack.undo();
                 }
@@ -537,7 +536,7 @@ public class UndoMacrosSample {
 
 /**
  * Common class for all {@link Doc} undo commands.
- *
+ * <p>
  * Команды для {@link Doc}
  */
 class DocCommands implements Serializable {
@@ -554,7 +553,7 @@ class DocCommands implements Serializable {
         @Override
         protected void doRedo() {
             Object o = getOwner().getSubj();
-            if (o != null && o instanceof Doc) {
+            if (o instanceof Doc) {
                 Doc doc = (Doc) getOwner().getSubj();
                 doc.addLine();
             }
@@ -563,7 +562,7 @@ class DocCommands implements Serializable {
         @Override
         protected void doUndo() {
             Object o = getOwner().getSubj();
-            if (o != null && o instanceof Doc) {
+            if (o instanceof Doc) {
                 Doc doc = (Doc) getOwner().getSubj();
                 doc.removeLine();
             }
@@ -587,7 +586,7 @@ class DocCommands implements Serializable {
         @Override
         protected void doRedo() {
             Object o = getOwner().getSubj();
-            if (o == null || !(o instanceof Doc)) {
+            if (!(o instanceof Doc)) {
                 return;
             }
 
@@ -597,7 +596,7 @@ class DocCommands implements Serializable {
             } else {
                 // Here we use local context for correct localization
                 Object o2 = getOwner().getLocalContexts().get("res");
-                if (o2 != null && o2 instanceof Res) {
+                if (o2 instanceof Res) {
                     Res res = (Res) o2;
                     text = String.format("%s: ", res.items.get(resId));
                 } else {
@@ -611,7 +610,7 @@ class DocCommands implements Serializable {
         @Override
         protected void doUndo() {
             Object o = getOwner().getSubj();
-            if (o == null || !(o instanceof Doc) || !init) {
+            if (!(o instanceof Doc) || !init) {
                 return;
             }
             Doc doc = (Doc) getOwner().getSubj();
@@ -643,7 +642,7 @@ class DocCommands implements Serializable {
         @Override
         protected void doRedo() {
             Object o = getOwner().getSubj();
-            if (o == null || !(o instanceof Doc)) {
+            if (!(o instanceof Doc)) {
                 return;
             }
 
@@ -654,12 +653,12 @@ class DocCommands implements Serializable {
                 // Here we use local contexts for appropriate objects:
                 // 1. Local callback for the parameterized using.
                 Object f = getOwner().getLocalContexts().get(funcId);
-                if (f != null && f instanceof Function) {
+                if (f instanceof Function) {
                     Function<Integer, R> fn = (Function<Integer, R>) f;
                     R val = fn.apply(promptId);
                     // 2. Local locale resource.
                     Object o2 = getOwner().getLocalContexts().get("res");
-                    if (o2 != null && o2 instanceof Res) {
+                    if (o2 instanceof Res) {
                         Res res = (Res) o2;
                         text = String.format("%s: %s", res.items.get(prefixId), String.valueOf(val));
                     } else {
@@ -674,7 +673,7 @@ class DocCommands implements Serializable {
         @Override
         protected void doUndo() {
             Object o = getOwner().getSubj();
-            if (o == null || !(o instanceof Doc) || !init) {
+            if (!(o instanceof Doc) || !init) {
                 return;
             }
             Doc doc = (Doc) getOwner().getSubj();

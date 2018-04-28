@@ -2,11 +2,9 @@ package com.gdetotut.samples.jundo.javafx;
 
 import com.gdetotut.jundo.UndoCommand;
 import com.gdetotut.jundo.UndoStack;
-import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;

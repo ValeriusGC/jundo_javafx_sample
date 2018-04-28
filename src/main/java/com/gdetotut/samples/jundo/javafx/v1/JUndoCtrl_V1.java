@@ -115,10 +115,10 @@ public class JUndoCtrl_V1 extends BaseCtrl implements UndoWatcher {
     private void serialize() throws IOException {
         try {
             String store = UndoPacket
-                    .make(stack, IDS_STACK, 1)
-                    .onStore(new UndoPacket.OnStore() {
+                    .prepare(stack, IDS_STACK, 1)
+                    .onStoreManually(new UndoPacket.OnStoreManually() {
                         @Override
-                        public Serializable handle(Object subj) {
+                        public Serializable store(Object subj) {
                             Map<String, Object> props = new HashMap<>();
                             Gson fxGson = FxGson.createWithExtras();
                             props.put("color", FxGson.createWithExtras().toJson(tab.shape.getFill()));
@@ -128,7 +128,7 @@ public class JUndoCtrl_V1 extends BaseCtrl implements UndoWatcher {
                             return fxGson.toJson(props);
                         }
                     })
-                    .zipped(true)
+                    .zip()
                     .store();
             // Save it in the file.
             Files.write(Paths.get("./undo.txt"), store.getBytes());

@@ -57,9 +57,9 @@ public class JUndoCtrl_V2 extends BaseCtrl implements UndoWatcher{
                     }
                     return map;
                 }, () -> new UndoStack(tab.shape))
-                .stack((stack, subjInfo, result) -> {
+                .process((stack, subjInfo, result) -> {
 
-                    if(result.result != UndoPacket.UnpackResult.UPR_Success) {
+                    if(result.code != UndoPacket.Result.Code.RC_Success) {
                         System.err.println(result.msg);
                     }
 
